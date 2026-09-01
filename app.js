@@ -6,7 +6,7 @@
 // Global State & Backend API Config
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://127.0.0.1:5000' 
-    : 'https://krishisetu-api.onrender.com'; // Default Cloud Endpoint
+    : 'https://krishisetu-cthu.onrender.com'; // Live Render Cloud API Endpoint
 
 let isBackendConnected = false;
 let currentRole = 'farmer';
