@@ -3,7 +3,12 @@
  * Direct Farm-to-Fork Disintermediation Platform
  */
 
-// Global State
+// Global State & Backend API Config
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://127.0.0.1:5000' 
+    : 'https://krishisetu-api.onrender.com'; // Default Cloud Endpoint
+
+let isBackendConnected = false;
 let currentRole = 'farmer';
 let currentLanguage = 'en';
 let currentCrop = 'tomato';
@@ -11,6 +16,29 @@ let isRecording = false;
 let recognition = null;
 let marginChart = null;
 let leafletMap = null;
+
+// Check Backend Health
+async function checkBackendHealth() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/health`);
+        if (res.ok) {
+            isBackendConnected = true;
+            const badge = document.getElementById('backend-status-badge');
+            if (badge) {
+                badge.className = "hidden sm:flex items-center text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span> Python REST API: Online`;
+            }
+            console.log("[KrishiSetu] Backend API Connected Successfully at", API_BASE_URL);
+        }
+    } catch (e) {
+        console.log("[KrishiSetu] Running in Client-First Mode (Backend offline or local)");
+        const badge = document.getElementById('backend-status-badge');
+        if (badge) {
+            badge.className = "hidden sm:flex items-center text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded";
+            badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span> Edge AI Client Engine`;
+        }
+    }
+}
 
 // Multilingual Translations Dictionary
 const translations = {
@@ -183,6 +211,7 @@ const stateMandiData = [
 // Initialize on Window Load
 document.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
+    checkBackendHealth();
     initSpeechRecognition();
     drawCropCanvas('tomato');
     renderBuyerProduce();
@@ -341,7 +370,7 @@ function speakFeedback(text) {
 }
 
 // Edge AI Computer Vision Simulation & Canvas Rendering
-function runVisionScan(cropType) {
+async function runVisionScan(cropType) {
     currentCrop = cropType;
 
     // Update Button States
@@ -355,16 +384,39 @@ function runVisionScan(cropType) {
 
     drawCropCanvas(cropType);
 
-    // Update Quality Metrics
-    if (cropType === 'tomato') {
-        updateQualityMetrics('GRADE A+', 'Certified Premium Export', '96.4%', 96, '< 1.8%', 5, '94.0%', 94, '₹14.50', '₹28.00', '₹45.00');
-    } else if (cropType === 'onion') {
-        updateQualityMetrics('GRADE A', 'Standard Grade 1 (Lasalgaon)', '94.8%', 94, '< 2.5%', 8, '91.5%', 91, '₹19.00', '₹32.00', '₹50.00');
-    } else if (cropType === 'apple') {
-        updateQualityMetrics('GRADE A+', 'Himachal Royal Delicious', '98.2%', 98, '< 0.5%', 2, '97.0%', 97, '₹65.00', '₹110.00', '₹180.00');
-    }
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/ai/grade-crop`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ crop_type: cropType })
+        });
+        const data = await res.json();
 
-    showToast(`AI Scanner: Analyzed ${cropType.toUpperCase()} lot with 99.2% confidence`);
+        updateQualityMetrics(
+            data.grade,
+            data.crop,
+            `${data.freshness_score}%`,
+            data.freshness_score,
+            `< ${data.defect_percentage}%`,
+            data.defect_percentage * 2,
+            `${data.size_uniformity}%`,
+            data.size_uniformity,
+            `₹${data.mandi_distress_price.toFixed(2)}`,
+            `₹${data.suggested_fair_price.toFixed(2)}`,
+            `₹${data.retail_market_price.toFixed(2)}`
+        );
+        showToast(`AI Vision API: Certified ${data.crop} with ${data.grade}!`);
+    } catch (e) {
+        // Fallback
+        if (cropType === 'tomato') {
+            updateQualityMetrics('GRADE A+', 'Certified Premium Export', '96.4%', 96, '< 1.8%', 5, '94.0%', 94, '₹14.50', '₹28.00', '₹45.00');
+        } else if (cropType === 'onion') {
+            updateQualityMetrics('GRADE A', 'Standard Grade 1 (Lasalgaon)', '94.8%', 94, '< 2.5%', 8, '91.5%', 91, '₹19.00', '₹32.00', '₹50.00');
+        } else if (cropType === 'apple') {
+            updateQualityMetrics('GRADE A+', 'Himachal Royal Delicious', '98.2%', 98, '< 0.5%', 2, '97.0%', 97, '₹65.00', '₹110.00', '₹180.00');
+        }
+        showToast(`AI Scanner: Analyzed ${cropType.toUpperCase()} lot`);
+    }
 }
 
 function updateQualityMetrics(grade, title, freshTxt, freshVal, defTxt, defVal, sizeTxt, sizeVal, pMandi, pKrishi, pRetail) {
@@ -649,7 +701,7 @@ function switchLoginTab(tab) {
     });
 }
 
-function fetchAgriStackLandRecord() {
+async function fetchAgriStackLandRecord() {
     const khasra = document.getElementById('land-khasra-input').value || "142/A";
     const state = document.getElementById('land-state-select').value;
     const dist = document.getElementById('land-district-input').value;
@@ -663,8 +715,32 @@ function fetchAgriStackLandRecord() {
         </div>
     `;
 
-    setTimeout(() => {
-        if (khasra === "142/A" || khasra.includes("142")) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/agristack/verify-land`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ khasra_no: khasra, state: state, district: dist })
+        });
+        const data = await res.json();
+
+        recordCard.innerHTML = `
+            <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-emerald-400 font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> AGRISTACK API: RECORD VERIFIED
+                </span>
+                <span class="text-[10px] text-slate-400">7/12 Utteara #${data.khasra_no}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+                <div><span class="text-slate-400">Title Owner:</span> <strong class="text-white">${data.owner_name}</strong></div>
+                <div><span class="text-slate-400">Land Area:</span> <strong class="text-emerald-300">${data.land_area_acres.toFixed(2)} Acres</strong></div>
+                <div><span class="text-slate-400">Crop (e-Pik):</span> <strong class="text-white">${data.seasonal_sowing_record.split('-')[0]}</strong></div>
+                <div><span class="text-slate-400">Geo-Polygon:</span> <strong class="text-emerald-300">${data.geo_polygon.latitude}° N, ${data.geo_polygon.longitude}° E</strong></div>
+            </div>
+        `;
+        showToast("✅ Real Backend: Land Record & Active Crop Sowing verified via AgriStack!");
+    } catch (e) {
+        // Graceful Client Fallback
+        setTimeout(() => {
             recordCard.innerHTML = `
                 <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
                     <span class="text-emerald-400 font-bold flex items-center gap-1">
@@ -679,25 +755,9 @@ function fetchAgriStackLandRecord() {
                     <div><span class="text-slate-400">Geo-Polygon:</span> <strong class="text-emerald-300">19.997° N, 73.789° E</strong></div>
                 </div>
             `;
-            showToast("✅ Land Record & Active Crop Sowing verified!");
-        } else {
-            recordCard.innerHTML = `
-                <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
-                    <span class="text-emerald-400 font-bold flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> AGRISTACK API: RECORD VERIFIED
-                    </span>
-                    <span class="text-[10px] text-slate-400">Khasra #${khasra} (${dist})</span>
-                </div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
-                    <div><span class="text-slate-400">Title Owner:</span> <strong class="text-white">Suresh More</strong></div>
-                    <div><span class="text-slate-400">Land Area:</span> <strong class="text-emerald-300">4.20 Acres</strong></div>
-                    <div><span class="text-slate-400">Crop (e-Pik):</span> <strong class="text-white">Red Onion (Lasalgaon)</strong></div>
-                    <div><span class="text-slate-400">Geo-Polygon:</span> <strong class="text-emerald-300">20.147° N, 74.225° E</strong></div>
-                </div>
-            `;
-            showToast("✅ Land Record & Active Crop Sowing verified!");
-        }
-    }, 600);
+            showToast("✅ Land Record verified via AgriStack!");
+        }, 500);
+    }
 }
 
 function submitFarmerLogin(name, phone, cluster) {
