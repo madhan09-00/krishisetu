@@ -1,0 +1,69 @@
+/* KrishiSetu Custom Styles */
+
+@keyframes scanLaserAnim {
+    0% {
+        top: 0%;
+        opacity: 0.8;
+    }
+    50% {
+        top: 96%;
+        opacity: 1;
+    }
+    100% {
+        top: 0%;
+        opacity: 0.8;
+    }
+}
+
+.scan-laser {
+    animation: scanLaserAnim 2.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.role-tab.active {
+    background-color: #ffffff;
+    color: #15803d;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.role-tab:not(.active) {
+    color: #64748b;
+}
+.role-tab:not(.active):hover {
+    color: #334155;
+}
+
+.crop-select-btn.active-crop {
+    background-color: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+    font-weight: 700;
+}
+
+.active-mobile {
+    color: #15803d;
+    font-weight: 700;
+    border-bottom: 2px solid #15803d;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Toast animation */
+.toast-visible {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+}

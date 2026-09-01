@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiSetu | Direct Farm-to-Fork Value Chain (SIH26033)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        agrigreen: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        saffron: {
+                            500: '#f97316',
+                            600: '#ea580c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Top Government & SIH Banner -->
+    <div class="bg-gradient-to-r from-emerald-900 via-slate-900 to-emerald-900 text-white text-xs py-1.5 px-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-2">
+                <span class="bg-saffron-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded">SIH 2026</span>
+                <span class="text-slate-300 font-medium">Problem Statement ID: <strong class="text-white">SIH26033</strong></span>
+                <span class="hidden md:inline text-slate-400">|</span>
+                <span class="hidden md:inline text-emerald-300">Ministry of Consumer Affairs, Food & Public Distribution</span>
+            </div>
+            <div class="flex items-center space-x-3 text-[11px]">
+                <button onclick="openFraudModal()" class="bg-red-600 hover:bg-red-700 px-2.5 py-0.5 rounded text-white font-bold transition flex items-center gap-1 shadow-sm shadow-red-600/30">
+                    <i data-lucide="shield-alert" class="w-3 h-3"></i> 🛡️ Anti-Middleman Verification Demo
+                </button>
+                <button onclick="openJudgeModal()" class="bg-emerald-700/60 hover:bg-emerald-600 px-2.5 py-0.5 rounded text-white border border-emerald-500/30 transition flex items-center gap-1">
+                    <i data-lucide="info" class="w-3 h-3"></i> Solution Architecture & Pitch Deck
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Branding -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchRole('farmer')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                        <i data-lucide="sprout" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xl font-black bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent tracking-tight">KrishiSetu</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.5 rounded border border-emerald-200">कृषि सेतु</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-tight">Direct Farm-to-Fork Value Chain</p>
+                    </div>
+                </div>
+
+                <!-- Role Switcher Tabs -->
+                <nav class="hidden md:flex bg-slate-100 p-1 rounded-xl border border-slate-200" id="role-nav">
+                    <button onclick="switchRole('farmer')" id="tab-farmer" class="role-tab active px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center space-x-2 transition-all">
+                        <i data-lucide="tractor" class="w-4 h-4"></i>
+                        <span>🧑‍🌾 Kisan (Farmer)</span>
+                    </button>
+                    <button onclick="switchRole('buyer')" id="tab-buyer" class="role-tab px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center space-x-2 transition-all">
+                        <i data-lucide="store" class="w-4 h-4"></i>
+                        <span>🏢 Buyer & Societies</span>
+                    </button>
+                    <button onclick="switchRole('ministry')" id="tab-ministry" class="role-tab px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center space-x-2 transition-all">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>🏛️ Ministry Analytics</span>
+                    </button>
+                </nav>
+
+                <!-- Language Selector & Farmer Profile / Login Button -->
+                <div class="flex items-center space-x-3">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-100 text-xs font-semibold text-slate-700 py-1.5 px-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                        </select>
+                    </div>
+
+                    <!-- Farmer Login / Profile Area -->
+                    <div id="auth-container" class="flex items-center space-x-2">
+                        <!-- Logged-in Profile Badge -->
+                        <div id="user-profile-badge" class="hidden sm:flex items-center space-x-2 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span id="user-badge" class="text-xs font-medium text-emerald-900">Ramesh Patil (Nashik FPO)</span>
+                            <button onclick="handleFarmerLogout()" class="text-slate-400 hover:text-red-600 ml-1.5 text-[11px] font-bold" title="Logout">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Login Button (Visible when logged out or to switch account) -->
+                        <button onclick="openFarmerLoginModal()" id="login-nav-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                            <span id="login-btn-text">Farmer Login</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Role Tabs -->
+        <div class="md:hidden flex border-t border-slate-200 bg-slate-50 px-2 py-1 justify-around text-xs font-medium">
+            <button onclick="switchRole('farmer')" class="mobile-role-tab active-mobile py-1 px-2" id="mob-farmer">🧑‍🌾 Kisan</button>
+            <button onclick="switchRole('buyer')" class="mobile-role-tab py-1 px-2 text-slate-600" id="mob-buyer">🏢 Buyer</button>
+            <button onclick="switchRole('ministry')" class="mobile-role-tab py-1 px-2 text-slate-600" id="mob-ministry">🏛️ Ministry</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+        <!-- =================================================================== -->
+        <!-- ROLE 1: FARMER (KISAN) PORTAL                                       -->
+        <!-- =================================================================== -->
+        <section id="role-section-farmer" class="space-y-6">
+            <!-- Farmer Hero Welcome & Quick Stats -->
+            <div class="bg-gradient-to-r from-emerald-800 to-green-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 bg-emerald-900/60 backdrop-blur-sm border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-medium text-emerald-200 mb-2">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Direct-to-Consumer Disintermediation
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold" data-i18n="farmer_welcome">Namaste Ramesh Ji! Sell directly, zero middleman commission.</h1>
+                        <p class="text-emerald-100 text-sm mt-1" data-i18n="farmer_sub">Get +35% higher realization with AI Quality Certification & Shared Cluster Logistics.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 text-center">
+                            <span class="text-xs text-emerald-200 uppercase font-semibold">Escrow Direct DBT</span>
+                            <div class="text-xl font-bold text-white">₹48,250</div>
+                            <span class="text-[10px] text-emerald-300">● 100% Guaranteed</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 text-center">
+                            <span class="text-xs text-emerald-200 uppercase font-semibold">Cluster Savings</span>
+                            <div class="text-xl font-bold text-emerald-300">₹3.40 / kg</div>
+                            <span class="text-[10px] text-emerald-200">Pooled Freight</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Farmer Action Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Left Column (7 cols): Multilingual Voice AI + AI Computer Vision Grading -->
+                <div class="lg:col-span-7 space-y-6">
+
+                    <!-- Voice AI Assistant Listing Box -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 relative">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                                    <i data-lucide="mic" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base" data-i18n="voice_title">🎙️ AI Multilingual Voice Assistant (Bhashini AI)</h3>
+                                    <p class="text-xs text-slate-500" data-i18n="voice_desc">Speak in Hindi, Marathi, Telugu, Tamil or English to instantly list produce.</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-red-50 text-red-700 font-semibold px-2 py-0.5 rounded-full border border-red-200">Voice-to-Listing</span>
+                        </div>
+
+                        <!-- Voice Prompt Simulator & Mic -->
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="text-xs font-semibold text-slate-700" data-i18n="voice_try">
+                                    Click Mic & Say: <span class="text-emerald-700 italic">"I have harvested 500 kg Grade A Tomatoes in Nashik"</span>
+                                </div>
+                                <span id="voice-status" class="text-[11px] text-slate-500 font-medium">Idle</span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <button id="mic-btn" onclick="toggleVoiceRecording()" class="w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg shadow-red-500/30 transition-all transform active:scale-95">
+                                    <i data-lucide="mic" class="w-6 h-6" id="mic-icon"></i>
+                                </button>
+
+                                <div class="flex-1 bg-white rounded-lg p-2.5 border border-slate-200 text-xs text-slate-700 min-h-[44px] flex items-center" id="voice-transcript">
+                                    <span class="text-slate-400 italic">Press the red microphone to speak or click quick sample below...</span>
+                                </div>
+                            </div>
+
+                            <!-- Quick Voice Simulation Chips -->
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button onclick="simulateVoiceInput('hi', 'मैंने नासिक में 500 किलो ताजा टमाटर तोड़ा है')" class="text-[11px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 px-2.5 py-1 rounded-md border border-slate-200 transition">
+                                    🗣️ Hindi: "मैंने नासिक में 500 किलो टमाटर तोड़ा है"
+                                </button>
+                                <button onclick="simulateVoiceInput('mr', 'माझ्याकडे 400 किलो कांदा विक्रीसाठी तयार आहे')" class="text-[11px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 px-2.5 py-1 rounded-md border border-slate-200 transition">
+                                    🗣️ Marathi: "माझ्याकडे 400 किलो कांदा तयार आहे"
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Extracted Listing Form -->
+                        <div id="listing-form" class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div>
+                                <label class="text-slate-500 font-medium">Crop Name</label>
+                                <input type="text" id="form-crop" value="Tomato (Tamatar)" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded font-semibold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Quantity (kg)</label>
+                                <input type="number" id="form-qty" value="500" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded font-semibold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Harvest Location</label>
+                                <input type="text" id="form-loc" value="Nashik Cluster #4" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded font-semibold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Suggested Fair Price</label>
+                                <input type="text" id="form-price" value="₹28 / kg" class="w-full mt-1 px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded font-bold text-emerald-800">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Computer Vision Crop Quality Assessor -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                    <i data-lucide="scan" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base" data-i18n="vision_title">📷 Edge AI Crop Quality Grading (Computer Vision)</h3>
+                                    <p class="text-xs text-slate-500">Instant ripeness, size uniformity & defect grading to guarantee buyer trust.</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded-full border border-indigo-200">YOLOv8 Edge AI</span>
+                        </div>
+
+                        <!-- Sample Selection Buttons -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                            <span class="text-slate-500 font-semibold whitespace-nowrap">Select Crop Scan:</span>
+                            <button onclick="runVisionScan('tomato')" class="crop-select-btn active-crop px-3 py-1 rounded-lg border border-slate-200 font-medium hover:bg-slate-50 transition" id="btn-tomato">🍅 Tomatoes (Nashik)</button>
+                            <button onclick="runVisionScan('onion')" class="crop-select-btn px-3 py-1 rounded-lg border border-slate-200 font-medium hover:bg-slate-50 transition" id="btn-onion">🧅 Onions (Lasalgaon)</button>
+                            <button onclick="runVisionScan('apple')" class="crop-select-btn px-3 py-1 rounded-lg border border-slate-200 font-medium hover:bg-slate-50 transition" id="btn-apple">🍎 Apples (Kinnaur)</button>
+                        </div>
+
+                        <!-- Scanner Viewport & Canvas -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                            <!-- Visual Canvas with Laser Animation -->
+                            <div class="sm:col-span-7 bg-slate-900 rounded-xl overflow-hidden relative flex items-center justify-center min-h-[220px]">
+                                <canvas id="visionCanvas" width="400" height="240" class="w-full h-full object-cover"></canvas>
+                                <div id="scanLaser" class="scan-laser absolute inset-x-0 h-1 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-400 shadow-lg shadow-emerald-400"></div>
+                                <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> INFERENCE: 18ms
+                                </div>
+                            </div>
+
+                            <!-- Quality Certificate Metric Box -->
+                            <div class="sm:col-span-5 bg-slate-50 rounded-xl p-3.5 border border-slate-200 flex flex-col justify-between space-y-3">
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-xs text-slate-500 font-medium">Quality Rating</span>
+                                        <span id="grade-badge" class="bg-emerald-600 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-sm">GRADE A+</span>
+                                    </div>
+                                    <div class="text-lg font-black text-slate-800" id="grade-title">Certified Premium Export</div>
+                                </div>
+
+                                <div class="space-y-2 text-xs">
+                                    <div>
+                                        <div class="flex justify-between text-slate-600 font-medium mb-1">
+                                            <span>Freshness Index</span>
+                                            <span id="metric-freshness" class="font-bold text-emerald-700">96.4%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-200 rounded-full h-1.5">
+                                            <div id="bar-freshness" class="bg-emerald-500 h-1.5 rounded-full" style="width: 96%"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex justify-between text-slate-600 font-medium mb-1">
+                                            <span>Defect & Spot Rate</span>
+                                            <span id="metric-defect" class="font-bold text-emerald-700">&lt; 1.8%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-200 rounded-full h-1.5">
+                                            <div id="bar-defect" class="bg-emerald-500 h-1.5 rounded-full" style="width: 5%"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex justify-between text-slate-600 font-medium mb-1">
+                                            <span>Size Uniformity</span>
+                                            <span id="metric-size" class="font-bold text-indigo-700">94.0%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-200 rounded-full h-1.5">
+                                            <div id="bar-size" class="bg-indigo-500 h-1.5 rounded-full" style="width: 94%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button onclick="publishCertifiedListing()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Publish Certified Lot to Buyers
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column (5 cols): Dynamic Fair-Price Corridor + Pooled Logistics -->
+                <div class="lg:col-span-5 space-y-6">
+
+                    <!-- Fair Price Recommender (Mandi vs KrishiSetu vs Retail) -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base" data-i18n="price_title">📊 Dynamic Fair-Price Corridor</h3>
+                                    <p class="text-xs text-slate-500">Agmarknet AI real-time price discovery</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Zero Commission</span>
+                        </div>
+
+                        <!-- Price Comparison Breakdown -->
+                        <div class="space-y-3">
+                            <!-- Local Mandi (Middleman) -->
+                            <div class="p-3 bg-red-50/70 border border-red-200 rounded-xl flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs font-bold text-red-800">Traditional Mandi (Middleman)</div>
+                                    <div class="text-[11px] text-red-600">Farmer gets distress rate after 6% commission</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-base font-extrabold text-red-700" id="price-mandi">₹14.50 / kg</div>
+                                    <div class="text-[10px] text-red-500 font-medium">Low realization (29%)</div>
+                                </div>
+                            </div>
+
+                            <!-- KrishiSetu Direct Fair Price -->
+                            <div class="p-3.5 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-500 rounded-xl flex justify-between items-center shadow-sm">
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-black text-emerald-900">KrishiSetu Fair Price</span>
+                                        <span class="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded">RECOMMENDED</span>
+                                    </div>
+                                    <div class="text-[11px] text-emerald-700">Direct buyer contract, zero commission</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xl font-black text-emerald-700" id="price-krishi">₹28.00 / kg</div>
+                                    <div class="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-1 rounded inline-block">+93% Farmer Gain</div>
+                                </div>
+                            </div>
+
+                            <!-- Consumer Supermarket Retail Price -->
+                            <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs font-bold text-slate-700">Urban Supermarket Retail</div>
+                                    <div class="text-[11px] text-slate-500">Final price paid by end-consumer</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-base font-bold text-slate-700" id="price-retail">₹45.00 / kg</div>
+                                    <div class="text-[10px] text-slate-500">Heavy middleman markup</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Calculator -->
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs flex justify-between items-center">
+                            <div>
+                                <span class="text-slate-500">Your 500 kg Lot Total Earning:</span>
+                                <div class="font-bold text-slate-800">KrishiSetu: <strong class="text-emerald-700 font-extrabold text-sm">₹14,000</strong> vs Mandi: ₹7,250</div>
+                            </div>
+                            <span class="bg-emerald-100 text-emerald-800 font-extrabold text-xs px-2 py-1 rounded-lg">+₹6,750 Profit</span>
+                        </div>
+                    </div>
+
+                    <!-- Shared Rural Logistics & Micro-Hub Pooling -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                                    <i data-lucide="truck" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-base" data-i18n="logistics_title">🚚 Micro-Hub Freight Pooling</h3>
+                                    <p class="text-xs text-slate-500">Nashik Rural Cluster #4 to Mumbai Hub</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full border border-blue-200">Shared Freight</span>
+                        </div>
+
+                        <!-- Truck Progress Indicator -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-semibold text-slate-700">
+                                <span>Shared 3-Ton Electric Truck Capacity</span>
+                                <span class="text-blue-700">2,450 kg / 3,000 kg (81.6%)</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3 p-0.5 border border-slate-200">
+                                <div class="bg-gradient-to-r from-blue-500 to-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 81.6%"></div>
+                            </div>
+                            <div class="flex justify-between text-[11px] text-slate-500">
+                                <span>6 Local Farmers Pooled</span>
+                                <span>⏰ Dispatch in 2h 15m</span>
+                            </div>
+                        </div>
+
+                        <!-- Pooled Participants -->
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                <span class="font-medium text-slate-700">🧑‍🌾 You (Ramesh Patil)</span>
+                                <span class="font-bold text-emerald-700">500 kg (Tomatoes)</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                <span class="font-medium text-slate-700">🧑‍🌾 Suresh More</span>
+                                <span class="font-bold text-slate-600">800 kg (Onions)</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                <span class="font-medium text-slate-700">🧑‍🌾 Ganesh Jadhav</span>
+                                <span class="font-bold text-slate-600">1,150 kg (Potatoes)</span>
+                            </div>
+                        </div>
+
+                        <div class="p-2.5 bg-blue-50/60 rounded-xl border border-blue-200 text-[11px] text-blue-900 flex items-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                            <span>Doorstep farm pickup scheduled at 4:30 PM. Geotagged & temperature monitored.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- ROLE 2: BUYER & HOUSING SOCIETY PORTAL                              -->
+        <!-- =================================================================== -->
+        <section id="role-section-buyer" class="hidden space-y-6">
+            <!-- Buyer Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 bg-indigo-900/60 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-medium text-indigo-300 mb-2">
+                            <i data-lucide="store" class="w-3.5 h-3.5 text-indigo-400"></i> Direct Farm-to-Kitchen Hub
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold" data-i18n="buyer_welcome">Farm Fresh Produce Direct from Verified FPOs</h1>
+                        <p class="text-slate-300 text-sm mt-1">20–30% Cheaper than Supermarkets. 100% Quality Certified by AI Computer Vision.</p>
+                    </div>
+
+                    <!-- Cart / Escrow Checkout Shortcut -->
+                    <button onclick="openEscrowModal()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition">
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                        <span>Society Group Cart (<span id="cart-count">3</span> items)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Housing Society Group-Buying Pool Active Campaign -->
+            <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-300/60 rounded-2xl p-5 shadow-sm space-y-3">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-extrabold text-slate-800 text-base">🏘️ Gokuldham Residential Society (Mumbai Hub)</h3>
+                                <span class="bg-amber-100 text-amber-900 font-bold text-[10px] px-2 py-0.5 rounded-full border border-amber-300">Live Bulk Pool</span>
+                            </div>
+                            <p class="text-xs text-slate-600">Neighbors pool orders to buy whole harvest lots directly at farm-gate prices.</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-slate-500">Current Unlocked Bulk Discount:</div>
+                        <div class="text-lg font-black text-amber-700">22% Direct Savings</div>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold text-slate-700">
+                        <span>Community Pool: 240 kg / 300 kg to unlock Maximum 30% Wholesale Tier</span>
+                        <span class="text-amber-800">80% Reached</span>
+                    </div>
+                    <div class="w-full bg-amber-200/50 rounded-full h-3 p-0.5 border border-amber-300">
+                        <div class="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full transition-all" style="width: 80%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex items-center space-x-2">
+                    <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold">All Verified Lots</button>
+                    <button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium">Grade A+ Certified</button>
+                    <button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium">Under 24h Harvest</button>
+                </div>
+                <div class="text-xs text-slate-500">
+                    Showing <strong class="text-slate-800">6 Active Direct Lots</strong> from Nashik & Pune FPOs
+                </div>
+            </div>
+
+            <!-- Produce Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="buyer-produce-grid">
+                <!-- Cards will be dynamically injected / rendered -->
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- ROLE 3: MINISTRY OF CONSUMER AFFAIRS ANALYTICS DASHBOARD            -->
+        <!-- =================================================================== -->
+        <section id="role-section-ministry" class="hidden space-y-6">
+            <!-- Ministry Header -->
+            <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 bg-emerald-900/60 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-medium text-emerald-300 mb-2">
+                            <i data-lucide="landmark" class="w-3.5 h-3.5 text-emerald-400"></i> Govt. of India Monitoring Portal
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold" data-i18n="ministry_title">National Agricultural Disintermediation & Price Spread Intelligence</h1>
+                        <p class="text-slate-300 text-sm mt-1">Real-time surveillance of farmer price realization, consumer retail index & food inflation damping.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-lg text-xs font-semibold">
+                            ● Agmarknet Live Integration
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- High Level KPI Impact Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold">Farmer Realization %</span>
+                    <div class="text-2xl font-black text-emerald-700 mt-1">68.4%</div>
+                    <span class="text-[11px] text-emerald-600 font-medium">↑ vs 28.5% in Mandi Middlemen</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold">Consumer Savings Index</span>
+                    <div class="text-2xl font-black text-blue-700 mt-1">-24.2%</div>
+                    <span class="text-[11px] text-blue-600 font-medium">↓ Reduction in retail inflation</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold">Post-Harvest Waste Avoided</span>
+                    <div class="text-2xl font-black text-amber-600 mt-1">3,420 MT</div>
+                    <span class="text-[11px] text-amber-700 font-medium">Under 24h farm-to-table transit</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs text-slate-500 font-semibold">Escrow DBT Disbursed</span>
+                    <div class="text-2xl font-black text-purple-700 mt-1">₹4.82 Cr</div>
+                    <span class="text-[11px] text-purple-600 font-medium">Zero default, instant UPI/DBT</span>
+                </div>
+            </div>
+
+            <!-- Analytics Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Supply Chain Margin Breakdown Comparison (7 cols) -->
+                <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Consumer Rupee Breakdown (Middleman vs KrishiSetu)</h3>
+                            <p class="text-xs text-slate-500">Where does every ₹100 paid by the consumer actually go?</p>
+                        </div>
+                        <span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded">Cost Attribution</span>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="h-64 relative">
+                        <canvas id="marginComparisonChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Geospatial Route & Cluster Aggregation Map (5 cols) -->
+                <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 flex flex-col">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">🗺️ Live Cluster & Disintermediation Corridors</h3>
+                            <p class="text-xs text-slate-500">Nashik & Pune Micro-Hubs to Mumbai Urban Clusters</p>
+                        </div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Active GPS</span>
+                    </div>
+
+                    <!-- Leaflet Map Container -->
+                    <div id="map" class="w-full h-64 rounded-xl border border-slate-200 z-10 flex-1 min-h-[250px]"></div>
+                </div>
+            </div>
+
+            <!-- Live State-wise Mandi vs Direct Price Tracker Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800 text-sm">State-wise Disintermediation & Agmarknet Price Index</h3>
+                    <span class="text-xs text-slate-500 font-medium">Updated every 15 mins via Agmarknet API</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">Commodity</th>
+                                <th class="py-3 px-4">Cluster / State</th>
+                                <th class="py-3 px-4 text-red-700">Mandi Middleman Price</th>
+                                <th class="py-3 px-4 text-emerald-700">KrishiSetu Direct Price</th>
+                                <th class="py-3 px-4 text-slate-700">Consumer Retail Price</th>
+                                <th class="py-3 px-4 text-center">Farmer Gain</th>
+                                <th class="py-3 px-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-700" id="mandi-table-body">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- MODALS & POPUPS                                                     -->
+    <!-- =================================================================== -->
+
+    <!-- Modal 0: Dedicated Farmer Login & Verification Portal -->
+    <div id="farmer-login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 border border-slate-100">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/30">
+                        <i data-lucide="tractor" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h2 class="text-lg font-black text-slate-900">Kisan Setu Login</h2>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">किसान प्रवेश</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Ministry of Agriculture & PM-KISAN Verified Portal</p>
+                    </div>
+                </div>
+                <button onclick="closeFarmerLoginModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Login Auth Method Tabs -->
+            <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold text-slate-600 gap-1" id="login-tabs">
+                <button onclick="switchLoginTab('otp')" id="login-tab-otp" class="flex-1 py-1.5 rounded-lg bg-white text-emerald-700 shadow-sm flex items-center justify-center gap-1 transition">
+                    <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Mobile OTP
+                </button>
+                <button onclick="switchLoginTab('voice')" id="login-tab-voice" class="flex-1 py-1.5 rounded-lg hover:text-slate-900 flex items-center justify-center gap-1 transition">
+                    <i data-lucide="mic" class="w-3.5 h-3.5"></i> Voice ID
+                </button>
+                <button onclick="switchLoginTab('aadhaar')" id="login-tab-aadhaar" class="flex-1 py-1.5 rounded-lg hover:text-slate-900 flex items-center justify-center gap-1 transition">
+                    <i data-lucide="fingerprint" class="w-3.5 h-3.5"></i> Aadhaar / KCC
+                </button>
+            </div>
+
+            <!-- TAB 1: Mobile OTP Form -->
+            <div id="login-form-otp" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-700 mb-1 block">Registered Mobile Number (PM-KISAN Linked)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-slate-500 border-r border-slate-200 pr-2 my-1.5">+91</span>
+                        <input type="tel" id="farmer-phone-input" value="9823014567" placeholder="Enter 10-digit mobile" class="w-full pl-14 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div id="otp-section" class="space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <label class="font-bold text-slate-700">Enter 4-Digit OTP</label>
+                        <span class="text-emerald-700 font-semibold text-[11px] cursor-pointer hover:underline" onclick="showToast('OTP resent to +91 9823014567')">Resend OTP (28s)</span>
+                    </div>
+                    <div class="flex gap-2 justify-between">
+                        <input type="text" maxlength="1" value="7" class="w-12 h-11 text-center font-black text-lg bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" maxlength="1" value="3" class="w-12 h-11 text-center font-black text-lg bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" maxlength="1" value="9" class="w-12 h-11 text-center font-black text-lg bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" maxlength="1" value="2" class="w-12 h-11 text-center font-black text-lg bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <p class="text-[11px] text-slate-400">💡 Demo Auto-fill OTP: <strong class="text-slate-600">7392</strong></p>
+                </div>
+
+                <button onclick="submitFarmerLogin('Ramesh Patil (Nashik FPO)', '9823014567', 'Maharashtra')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span>Verify & Access Kisan Dashboard</span>
+                </button>
+            </div>
+
+            <!-- TAB 2: Voice Biometrics Form (For illiterate/regional farmers) -->
+            <div id="login-form-voice" class="hidden space-y-4 text-center py-2">
+                <div class="w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center shadow-inner cursor-pointer animate-pulse" onclick="simulateVoiceBiometricAuth()">
+                    <i data-lucide="mic" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm">🎙️ Voice Biometric Identity (आवाज़ से पहचान)</h4>
+                    <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">Tap the red mic and state your name or village in your native language (e.g. <em>"Mera naam Ramesh Patil hai, Nashik"</em>).</p>
+                </div>
+                <button onclick="simulateVoiceBiometricAuth()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow-md shadow-red-600/20 transition">
+                    Scan Voiceprint & Login
+                </button>
+            </div>
+
+            <!-- TAB 3: Aadhaar / AgriStack Land Record Verification Form -->
+            <div id="login-form-aadhaar" class="hidden space-y-3.5">
+                <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1">
+                    <div class="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Govt. AgriStack & Bhulekh Land Record Cross-Check</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-700">Verifies that the applicant owns or leases registered agricultural farmland.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="text-slate-600 font-bold mb-1 block">State Land Portal</label>
+                        <select id="land-state-select" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500">
+                            <option value="mh">Maharashtra (MahaBhulekh / 7/12)</option>
+                            <option value="up">Uttar Pradesh (UP Bhulekh)</option>
+                            <option value="ka">Karnataka (Bhoomi Portal)</option>
+                            <option value="ts">Telangana (Dharani Portal)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-slate-600 font-bold mb-1 block">District / Taluka</label>
+                        <input type="text" id="land-district-input" value="Nashik / Niphad" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="text-slate-600 font-bold mb-1 block">Aadhaar No. (e-KYC)</label>
+                        <input type="text" id="land-aadhaar-input" value="XXXX-XXXX-8924" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800">
+                    </div>
+                    <div>
+                        <label class="text-slate-600 font-bold mb-1 block">Khasra / Survey Gut No.</label>
+                        <div class="flex gap-1">
+                            <input type="text" id="land-khasra-input" value="142/A" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800">
+                            <button onclick="fetchAgriStackLandRecord()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl shadow-sm whitespace-nowrap">
+                                🔍 Fetch
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Fetched Record Card -->
+                <div id="fetched-land-record" class="bg-slate-900 text-white rounded-2xl p-3.5 space-y-2 text-xs font-mono">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                        <span class="text-emerald-400 font-bold flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> AGRISTACK API: RECORD VERIFIED
+                        </span>
+                        <span class="text-[10px] text-slate-400">7/12 Utteara #142/A</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+                        <div><span class="text-slate-400">Title Owner:</span> <strong class="text-white">Ramesh Patil</strong></div>
+                        <div><span class="text-slate-400">Land Area:</span> <strong class="text-emerald-300">3.50 Acres</strong></div>
+                        <div><span class="text-slate-400">Crop (e-Pik):</span> <strong class="text-white">Tomato (Hybrid)</strong></div>
+                        <div><span class="text-slate-400">Geo-Polygon:</span> <strong class="text-emerald-300">19.997° N, 73.789° E</strong></div>
+                    </div>
+                </div>
+
+                <button onclick="submitFarmerLogin('Ramesh Patil (Nashik FPO)', 'XXXX-8924', 'Maharashtra')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Authenticate via AgriStack & Access Dashboard</span>
+                </button>
+            </div>
+
+            <!-- 1-Click Fast Demo Login for Judges & Evaluators -->
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block text-center">⚡ 1-Click Evaluator Demo Profiles</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="submitFarmerLogin('Ramesh Patil (Nashik FPO)', '9823014567', 'Nashik Cluster #4')" class="p-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-left transition">
+                        <strong class="text-xs text-slate-800 block">🧑‍🌾 Ramesh Patil</strong>
+                        <span class="text-[10px] text-slate-500">Nashik FPO (Tomato Producer)</span>
+                    </button>
+                    <button onclick="submitFarmerLogin('Suresh More (Lasalgaon FPO)', '9405112233', 'Lasalgaon Onion Hub')" class="p-2 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 rounded-xl text-left transition">
+                        <strong class="text-xs text-slate-800 block">🧑‍🌾 Suresh More</strong>
+                        <span class="text-[10px] text-slate-500">Lasalgaon FPO (Onion Producer)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 0.5: Live Anti-Fraud & Middleman Intrusion Detection Simulator -->
+    <div id="fraud-shield-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl space-y-5 border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-600/30">
+                        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h2 class="text-lg font-black text-slate-900">Zero-Intermediary Trust Shield</h2>
+                            <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-200">Anti-Middleman AI</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Live Simulation: How KrishiSetu catches fake accounts & rogue traders</p>
+                    </div>
+                </div>
+                <button onclick="closeFraudModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Simulation Selector -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="simulateFraudCheck('trader')" id="sim-btn-trader" class="p-3 bg-red-50 hover:bg-red-100 border-2 border-red-400 rounded-2xl text-left transition space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-red-900 text-xs">⚠️ Attack Scenario 1</span>
+                        <span class="bg-red-200 text-red-900 text-[9px] font-black px-1.5 py-0.5 rounded">Rogue Trader</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-800">Middleman in Urban Mandi</div>
+                    <p class="text-[11px] text-slate-600">Attempts listing 40 Tons using fake credentials.</p>
+                </button>
+
+                <button onclick="simulateFraudCheck('genuine')" id="sim-btn-genuine" class="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 rounded-2xl text-left transition space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-emerald-800 text-xs">✅ Valid Scenario 2</span>
+                        <span class="bg-emerald-200 text-emerald-900 text-[9px] font-black px-1.5 py-0.5 rounded">Genuine Farmer</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-800">Ramesh Patil (Nashik)</div>
+                    <p class="text-[11px] text-slate-600">Geo-fenced farm photo with PM-KISAN sync.</p>
+                </button>
+            </div>
+
+            <!-- Live Verification Pipeline Inspector -->
+            <div class="bg-slate-900 rounded-2xl p-4 text-white space-y-3 font-mono text-xs" id="fraud-log-box">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-slate-400 font-bold">LIVE ANTI-FRAUD VERIFICATION PIPELINE</span>
+                    <span id="pipeline-status-badge" class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded">TESTING</span>
+                </div>
+
+                <div class="space-y-2 text-[11px]" id="fraud-pipeline-steps">
+                    <!-- Steps will be injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Verdict Card -->
+            <div id="fraud-verdict-card" class="p-4 rounded-2xl border flex items-center gap-3">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 1: SIH Judge & Solution Architecture Pitch Modal -->
+    <div id="judge-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-2.5 py-1 rounded">SIH 2026 Pitch Deck</span>
+                    <h2 class="text-lg font-bold text-slate-900">Problem Statement SIH26033 Evaluation Brief</h2>
+                </div>
+                <button onclick="closeJudgeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <h4 class="font-bold text-emerald-900 text-sm mb-1">🎯 Problem Addressed</h4>
+                    <p>Multiple intermediaries (commission agents, aggregators, wholesalers) capture 60–70% of the consumer rupee while farmers get distress prices and consumers pay inflated rates.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <strong class="text-slate-900 block mb-1">1. Multilingual Voice AI</strong>
+                        <span>Non-tech-savvy farmers list produce in native regional dialects via speech synthesis & entity parsing.</span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <strong class="text-slate-900 block mb-1">2. Edge Computer Vision</strong>
+                        <span>Automated crop defect, size, and ripeness grading giving buyers guaranteed quality certificates without middlemen.</span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <strong class="text-slate-900 block mb-1">3. Shared Load Pooling</strong>
+                        <span>Geospatial aggregation of smallholder yields to cut freight cost per kg by up to 45%.</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-900 text-slate-200 rounded-xl">
+                    <h4 class="font-bold text-white text-xs mb-1 uppercase tracking-wide text-emerald-400">Technical Architecture Stack</h4>
+                    <p class="font-mono text-[11px] text-slate-300">Frontend: PWA (Tailwind, Lucide, Leaflet, Chart.js) | AI: YOLOv8 Vision Model, Web Speech / Whisper API | Backend: FastAPI / Python, PostgreSQL PostGIS | Payments: Escrow UPI / e-RUPI DBT</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeJudgeModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs">
+                    Close Brief
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Escrow Checkout & Society Cart Modal -->
+    <div id="escrow-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i>
+                    <h2 class="text-base font-bold text-slate-900">Escrow Direct Payment Simulation</h2>
+                </div>
+                <button onclick="closeEscrowModal()" class="text-slate-400 hover:text-slate-700">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex justify-between items-center">
+                    <div>
+                        <span class="text-emerald-900 font-bold block">Gokuldham Society Bulk Lot #904</span>
+                        <span class="text-emerald-700">500 kg Grade A Tomatoes from Ramesh Patil</span>
+                    </div>
+                    <span class="text-base font-black text-emerald-900">₹14,000</span>
+                </div>
+
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-slate-600">
+                    <div class="flex justify-between">
+                        <span>Produce Value (Farmer Payout):</span>
+                        <span class="font-bold text-slate-800">₹14,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Shared Freight & Logistics:</span>
+                        <span class="font-bold text-slate-800">₹1,250</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Middleman Commission Fee:</span>
+                        <span class="font-bold text-emerald-600">₹0.00 (100% Disintermediated)</span>
+                    </div>
+                    <div class="border-t border-slate-200 pt-1.5 flex justify-between text-sm font-black text-slate-900">
+                        <span>Total Society Escrow Lock:</span>
+                        <span class="text-emerald-700">₹15,250</span>
+                    </div>
+                </div>
+
+                <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-amber-900 flex items-start gap-2">
+                    <i data-lucide="lock" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+                    <span>Funds stay safely locked in the Escrow account and will only be disbursed to the farmer via instant DBT once delivery is scanned & verified by the society secretary.</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeEscrowModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs">
+                    Cancel
+                </button>
+                <button onclick="confirmEscrowPayment()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs shadow-md shadow-emerald-600/20">
+                    Lock Escrow & Confirm (UPI)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400" id="toast-icon"></i>
+        <span id="toast-msg">Action performed successfully!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-white">KrishiSetu</span>
+                <span>• Smart India Hackathon 2026 Prototype</span>
+            </div>
+            <div class="text-slate-500">
+                Built for Ministry of Consumer Affairs, Food & Public Distribution (PS ID: SIH26033)
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
